@@ -1,0 +1,4 @@
+authy
+django-phonenumber-field
+django-countries
+-e git+https://github.com/rosscdh/django-jsonfield.git@lawpal#egg=django-jsonfield
