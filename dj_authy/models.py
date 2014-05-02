@@ -4,7 +4,6 @@ from django.db import IntegrityError
 from django.contrib.auth.models import User
 
 from jsonfield import JSONField
-from django_countries.fields import CountryField
 from phonenumber_field.modelfields import PhoneNumberField
 
 from .services import AuthyService
@@ -16,8 +15,7 @@ logger = logging.getLogger('django.request')
 class AuthyProfile(models.Model):
     user = models.OneToOneField('auth.User')
     authy_id = models.CharField(max_length=64, null=True, db_index=True)
-    cellphone = PhoneNumberField(db_index=True, null=True)
-    country = CountryField(null=True)
+    cellphone = PhoneNumberField(db_index=True, null=True)  # access country from the cellphone object
     is_smartphone = models.BooleanField(default=True)
     data = JSONField(default={})
 

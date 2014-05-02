@@ -3,9 +3,12 @@ from django.conf import settings
 from authy.api import AuthyApiClient
 
 AUTHY_KEY = getattr(settings, 'AUTHY_KEY', None)
+AUTHY_IS_SANDBOXED = getattr(settings, 'AUTHY_IS_SANDBOXED', True)
 AUTHY_FORCE_VERIFICATION = getattr(settings, 'AUTHY_FORCE_VERIFICATION', True)
 
 assert AUTHY_KEY, 'You must define a settings.AUTHY_KEY'
+
+AUTHY_API_URL = 'http://sandbox-api.authy.com' if AUTHY_IS_SANDBOXED is True else None  # None as we then use the clients default which should be https://api.authy.com
 
 from .signals import authy_event
 
@@ -31,7 +34,8 @@ class AuthyService(object):
         self.key = kwargs.get('key', AUTHY_KEY)
         self.force_verification = kwargs.get('force_verification', AUTHY_FORCE_VERIFICATION)
 
-        self.client = AuthyApiClient(self.key)
+        self.client = AuthyApiClient(api_key=self.key, api_uri=AUTHY_API_URL)
+
         logger.info('Initialized authy.Client with key: %s' % self.key)
 
         self.ensure_user_registered()
@@ -45,7 +49,7 @@ class AuthyService(object):
 
             authy_user = self.client.users.create(self.user.email,
                                                   int(self.authy_profile.cellphone.national_number), # phonenumberfield stores as long
-                                                  self.authy_profile.cellphone.country_code) #email, cellphone, area_code
+                                                  int(self.authy_profile.cellphone.country_code)) #email, cellphone, area_code
 
             if authy_user.ok():
                 self.authy_profile.authy_id = authy_user.id
@@ -56,7 +60,9 @@ class AuthyService(object):
                 msg = 'Could not register Auth.user: %s' % errors
                 logger.error(msg)
                 raise Exception(msg)
+
         logger.info('Authy user: %s %s' % (self.user, self.authy_profile.authy_id))
+
         return True
 
     def request_sms_token(self):
