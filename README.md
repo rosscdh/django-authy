@@ -1,7 +1,7 @@
-django-dj_authy
+django-authy
 ====================
 
-A Django app for integrating with dj_authy
+A Django app for integrating with authy
 
 
 Installation
@@ -19,7 +19,8 @@ __Required__
 
 
 ```
-AUTHY_KEY : the authy key for your app
+AUTHY_KEY : the authy key for your app (ensure to use production key for production and sandbox key for dev)
+AUTHY_IS_SANDBOXED : this should be True when you are using the sandbox
 ```
 
 
@@ -27,27 +28,6 @@ __Example Implementation__
 
 
 ```views.py
-```
-
-
-__Please Note__
-
-A signal will be issued when recieving callbacks from dj_authy
-
-
-__Signal Example Implementation__
-
-
-```signals.py
-from django.dispatch import receiver
-
-from dj_authy.signals import dj_authy_event
-
-
-@receiver(dj_authy_event)
-def on_dj_authy_callback(sender, stamp_serial, **kwargs):
-    # do something amazing with the data in the kwargs dict
-    pass
 ```
 
 
