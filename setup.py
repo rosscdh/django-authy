@@ -14,6 +14,5 @@ setup(
     install_requires = [
         'authy',
         'django-phonenumber-field',
-        'django-countries',
     ]
 )
