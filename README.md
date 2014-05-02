@@ -19,8 +19,7 @@ __Required__
 
 
 ```
-SNOWSHOESTAMP_KEY : the oauth key for your app
-SNOWSHOESTAMP_SECRET : the oauth secret for your app
+AUTHY_KEY : the authy key for your app
 ```
 
 
