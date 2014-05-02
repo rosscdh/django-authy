@@ -24,11 +24,24 @@ AUTHY_IS_SANDBOXED : this should be True when you are using the sandbox
 ```
 
 
-__Example Implementation__
+__Overview__
 
+dj_authy appends authy_profile to the default django User object
 
-```views.py
 ```
+user = User.objects.get(pk=1)
+
+profile = user.authy_profile
+
+profile.cellphone = '+4917627266561'
+# note the +49 this is important, as profile.cellphone.national_number and profile.cellphone.country_code are derived from this 
+profile.save()
+
+service = profile.service  # the authy service wrapper
+# service will automatically create the authy.user if we dont already have an authy_id for it
+service.verify_token(0000000)  # user entered token;
+```
+
 
 
 __TODO__
