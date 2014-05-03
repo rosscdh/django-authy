@@ -8,7 +8,7 @@ AUTHY_FORCE_VERIFICATION = getattr(settings, 'AUTHY_FORCE_VERIFICATION', True)
 
 assert AUTHY_KEY, 'You must define a settings.AUTHY_KEY'
 
-AUTHY_API_URL = 'http://sandbox-api.authy.com' if AUTHY_IS_SANDBOXED is True else None  # None as we then use the clients default which should be https://api.authy.com
+AUTHY_API_URL = 'http://sandbox-api.authy.com' if AUTHY_IS_SANDBOXED is True else 'https://api.authy.com'  # None as we then use the clients default which should be https://api.authy.com
 
 from .signals import authy_event
 
@@ -45,6 +45,10 @@ class AuthyService(object):
         return int(self.authy_profile.authy_id)
 
     def ensure_user_registered(self):
+        """
+        Create an authy user at authy if we dont have an authy_id for the
+        current django user
+        """
         if self.authy_profile.authy_id is None:
 
             authy_user = self.client.users.create(self.user.email,
@@ -66,6 +70,10 @@ class AuthyService(object):
         return True
 
     def request_sms_token(self):
+        """
+        To be used when the user manually presses a buttton in your ui that
+        says "I dont have a smartphone, please send me a token by sms"
+        """
         if self.authy_profile.is_smartphone is True:
             sms = self.client.users.request_sms(self.authy_id)
         else:
