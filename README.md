@@ -1,7 +1,7 @@
-django-dj_authy
+django-authy
 ====================
 
-A Django app for integrating with dj_authy
+A Django app for integrating with authy
 
 
 Installation
@@ -19,36 +19,29 @@ __Required__
 
 
 ```
-AUTHY_KEY : the authy key for your app
+AUTHY_KEY : the authy key for your app (ensure to use production key for production and sandbox key for dev)
+AUTHY_IS_SANDBOXED : this should be True when you are using the sandbox
 ```
 
 
-__Example Implementation__
+__Overview__
 
+dj_authy appends authy_profile to the default django User object
 
-```views.py
+```
+user = User.objects.get(pk=1)
+
+profile = user.authy_profile
+
+profile.cellphone = '+4917627266561'
+# note the +49 this is important, as profile.cellphone.national_number and profile.cellphone.country_code are derived from this 
+profile.save()
+
+service = profile.service  # the authy service wrapper
+# service will automatically create the authy.user if we dont already have an authy_id for it
+service.verify_token(0000000)  # user entered token;
 ```
 
-
-__Please Note__
-
-A signal will be issued when recieving callbacks from dj_authy
-
-
-__Signal Example Implementation__
-
-
-```signals.py
-from django.dispatch import receiver
-
-from dj_authy.signals import dj_authy_event
-
-
-@receiver(dj_authy_event)
-def on_dj_authy_callback(sender, stamp_serial, **kwargs):
-    # do something amazing with the data in the kwargs dict
-    pass
-```
 
 
 __TODO__
