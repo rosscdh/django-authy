@@ -75,12 +75,18 @@ class AuthyService(object):
         return ok if ok is True else sms.errors()
 
     def verify_token(self, token):
-        if type(token) not in [int]:
-            raise Exception('Authy token must be an integer')
+        """
+        Token should always be passed in as a string
+        0000000 evaluates as 0 (sandbox test token)
+        """
+        if type(token) not in [str, unicode]:
+            raise Exception('Token to validate should be a string.')
 
-        verification = self.client.tokens.verify(self.authy_id, token, {"force": self.force_verification})
+        verification = self.client.tokens.verify(self.authy_id, str(token), {"force": self.force_verification})
         verified = verification.ok()
         errors = verification.errors()
+
         if not verified:
             logger.error('User: %s could not be verified using the token: %s due to: %s' % (self.user, token, errors))
+
         return verified
