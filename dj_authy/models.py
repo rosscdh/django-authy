@@ -12,12 +12,31 @@ import logging
 logger = logging.getLogger('django.request')
 
 
+class AuthyModelMixin(object):
+    """
+    Interface Mixin to provide getters and setters to allow user to override the getters
+    and setters and provide access to the data
+    """
+    @property
+    def require_authy_authentication(self):
+        return self.data.get('require_authy_authentication', False)
+
+    @require_authy_authentication.setter
+    def require_authy_authentication(self, value):
+        if value not in [True, False]:
+            raise Exception('require_authy_authentication must be a boolean True or False')
+        self.data['require_authy_authentication'] = value
+
+
 class AuthyProfile(models.Model):
     user = models.OneToOneField('auth.User')
     authy_id = models.CharField(max_length=64, null=True, db_index=True)
     cellphone = PhoneNumberField(db_index=True, null=True)  # access country from the cellphone object
     is_smartphone = models.BooleanField(default=True)
     data = JSONField(default={})
+
+    class Meta:
+        unique_together = ('authy_id', 'cellphone',)
 
     @property
     def service(self):

@@ -3,7 +3,7 @@ from django.conf import settings
 from authy.api import AuthyApiClient
 
 AUTHY_KEY = getattr(settings, 'AUTHY_KEY', None)
-AUTHY_IS_SANDBOXED = getattr(settings, 'AUTHY_IS_SANDBOXED', True)
+AUTHY_IS_SANDBOXED = getattr(settings, 'AUTHY_IS_SANDBOXED', False)
 AUTHY_FORCE_VERIFICATION = getattr(settings, 'AUTHY_FORCE_VERIFICATION', True)
 
 assert AUTHY_KEY, 'You must define a settings.AUTHY_KEY'
@@ -25,6 +25,7 @@ class AuthyService(object):
 
     client = None
     force_verification = False
+    errors = {}
 
     def __init__(self, user, *args, **kwargs):
         # Allow overrides
@@ -33,6 +34,7 @@ class AuthyService(object):
 
         self.key = kwargs.get('key', AUTHY_KEY)
         self.force_verification = kwargs.get('force_verification', AUTHY_FORCE_VERIFICATION)
+        self.errors = {}  # reset errors
 
         self.client = AuthyApiClient(api_key=self.key, api_uri=AUTHY_API_URL)
 
@@ -92,9 +94,9 @@ class AuthyService(object):
 
         verification = self.client.tokens.verify(self.authy_id, str(token), {"force": self.force_verification})
         verified = verification.ok()
-        errors = verification.errors()
+        self.errors = verification.errors()
 
         if not verified:
-            logger.error('User: %s could not be verified using the token: %s due to: %s' % (self.user, token, errors))
+            logger.error('User: %s could not be verified using the token: %s due to: %s' % (self.user, token, self.errors))
 
         return verified

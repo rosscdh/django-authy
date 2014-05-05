@@ -1,0 +1,22 @@
+{% extends 'dj_authy/base.html' %}
+
+{% block body %}
+
+<div class="login-form">
+    <form method="POST">{% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" name="submit" value="Save"/>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block css %}
+    {{ block.super }}
+    {{ form.media.css }}
+{% endblock %}
+
+{% block js %}
+    {{ block.super }}
+    {{ form.media.js }}
+{% endblock %}
