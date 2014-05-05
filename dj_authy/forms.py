@@ -40,10 +40,10 @@ class AuthyRegisterForm(BaseAuthyMediaForm):
         self.fields['cellphone'].initial = self.initial['cellphone']
 
     def _get_country_prefix(self, instance):
-        return instance.cellphone.country_code
+        return instance.cellphone.country_code if instance.cellphone else None
 
     def _get_cellphone(self, instance):
-        return instance.cellphone.national_number
+        return instance.cellphone.national_number if instance.cellphone else None
 
     def clean_cellphone(self):
         """
