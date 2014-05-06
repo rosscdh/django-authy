@@ -1,8 +1,8 @@
 from setuptools import setup
 
 setup(
-    name="authy",
-    packages=['authy'],
+    name="dj_authy",
+    packages=['dj_authy'],
     version='0.1.0',
     author="Ross Crawford-d'Heureuse",
     license="MIT",
