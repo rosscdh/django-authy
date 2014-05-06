@@ -15,7 +15,9 @@ logger = logging.getLogger('django.request')
 class AuthyModelMixin(object):
     """
     Interface Mixin to provide getters and setters to allow user to override the getters
-    and setters and provide access to the data
+    and setters and provide access to the data.
+
+    Use only if you want authy to be applied to a specific object, use in conjusnction with AuthyRequiredViewMixin
     """
     @property
     def require_authy_authentication(self):

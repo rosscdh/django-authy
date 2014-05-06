@@ -97,6 +97,8 @@ class AuthyService(object):
         self.errors = verification.errors()
 
         if not verified:
-            logger.error('User: %s could not be verified using the token: %s due to: %s' % (self.user, token, self.errors))
+            logger.error(u'User: %s could not be verified using the token: %s due to: %s' % (self.user, token, self.errors))
+        else:
+            logger.debug(u'User: %s has authenticated successfully with Authy using token: %s' % (self.user, token))
 
         return verified

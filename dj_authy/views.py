@@ -1,18 +1,65 @@
 # -*- coding: utf-8 -*-
 from django.core import signing
 from django.conf import settings
-from django.contrib import messages
 from django.http import HttpResponseRedirect
-from django.core.urlresolvers import reverse_lazy
 from django.views.generic import UpdateView
 
+from . import _url_to_appropriate_authy_page
 from .models import AuthyProfile
 from .forms import AuthyRegisterForm, Authy2FAForm
 
+import logging
+logger = logging.getLogger('django.request')
 
-class AuthyAuthyRequiredViewMixin(object):
+
+class ProfileView(UpdateView):
+    model = AuthyProfile
+    form_class = AuthyRegisterForm
+
+    def get_object(self):
+        return self.request.user.authy_profile
+
+    def get_success_url(self):
+        return self.request.GET.get('next', '/')
+
+
+class HoldingPageView(UpdateView):
     """
-    CBV mixin that requires authy_authentication
+    View to prompt the user to enter their Authy Token to authenticate and continue
+    """
+    model = AuthyProfile
+    template_name = 'dj_authy/authyholding_page.html'
+    form_class = Authy2FAForm
+    token = None
+
+    def dispatch(self, request, *args, **kwargs):
+        self.token = request.GET.get('token', None)
+
+        # decode the passed in token
+        if self.token:
+            self.token = signing.loads(self.token, salt=settings.SECRET_KEY)
+            logger.debug('Authy Session Token decoded as: %s' % self.token)
+
+        return super(HoldingPageView, self).dispatch(request=request, *args, **kwargs)
+
+    def get_object(self):
+        return self.request.user.authy_profile
+
+    def get_success_url(self):
+        url = self.request.GET.get('next', '/')
+        logger.debug('Authy HoldingPage redirect to: %s' % url)
+        return url
+
+    def form_valid(self, form):
+        # setup the session
+        self.request.session[self.token] = True
+        logger.debug('Authy HoldingPage form is valid, now setting session token: %s to True' % self.token)
+        return super(HoldingPageView, self).form_valid(form=form)
+
+
+class AuthyRequiredViewMixin(object):
+    """
+    CBV mixin that requires authy_authentication for a specific DetailView
     """
 
     @property
@@ -44,21 +91,7 @@ class AuthyAuthyRequiredViewMixin(object):
         Redirect to our authy holding page OR redirect to the we need more info
         authy page for this user
         """
-        profile = self.request.user.authy_profile
-
-        if profile.cellphone is None:
-            message = 'Please complete the following details before you can authenticate using authy (https://www.authy.com/).'
-            url = reverse_lazy('dj_authy:profile')
-        else:
-            message = 'Please authenticate yourself using authy (https://www.authy.com/).'
-            url = reverse_lazy('dj_authy:holding')
-
-        token = signing.dumps(self.authy_required_session_token, salt=settings.SECRET_KEY)
-        next = self.request.get_full_path()
-
-        messages.info(self.request, message)
-
-        return '{url}?token={token}&next={next}'.format(url=url, token=token, next=next)
+        return _url_to_appropriate_authy_page(self.request, self.authy_required_session_token)
 
     def render_to_response(self, context, **response_kwargs):
         """
@@ -68,7 +101,7 @@ class AuthyAuthyRequiredViewMixin(object):
         passed to the constructor of the response class.
         """
         if not hasattr(self, 'object'):
-            raise Exception('AuthyAuthyRequiredViewMixin requires a self.object in order to work')
+            raise Exception('AuthyRequiredViewMixin requires a self.object in order to work')
 
         if self.requires_authy_authentication is True:
 
@@ -76,45 +109,4 @@ class AuthyAuthyRequiredViewMixin(object):
 
                 return HttpResponseRedirect(self.authy_redirect())
 
-        return super(AuthyAuthyRequiredViewMixin, self).render_to_response(context=context, **response_kwargs)
-
-
-class ProfileView(UpdateView):
-    model = AuthyProfile
-    form_class = AuthyRegisterForm
-
-    def get_object(self):
-        return self.request.user.authy_profile
-
-    def get_success_url(self):
-        return self.request.GET.get('next', '/')
-
-
-class HoldingPageView(UpdateView):
-    """
-    View to prompt the user to enter their Authy Token to authenticate and continue
-    """
-    model = AuthyProfile
-    template_name = 'dj_authy/authyholding_page.html'
-    form_class = Authy2FAForm
-    token = None
-
-    def dispatch(self, request, *args, **kwargs):
-        self.token = request.GET.get('token', None)
-
-        # decode the passed in token
-        if self.token:
-            self.token = signing.loads(self.token, salt=settings.SECRET_KEY)
-
-        return super(HoldingPageView, self).dispatch(request=request, *args, **kwargs)
-
-    def get_object(self):
-        return self.request.user.authy_profile
-
-    def get_success_url(self):
-        return self.request.GET.get('next', '/')
-
-    def form_valid(self, form):
-        # setup the session
-        self.request.session[self.token] = True
-        return super(HoldingPageView, self).form_valid(form=form)
+        return super(AuthyRequiredViewMixin, self).render_to_response(context=context, **response_kwargs)
