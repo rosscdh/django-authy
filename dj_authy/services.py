@@ -67,7 +67,7 @@ class AuthyService(object):
                 logger.error(msg)
                 raise Exception(msg)
 
-        logger.info('Authy user: %s %s' % (self.user, self.authy_profile.authy_id))
+        logger.info(u'Authy user: %s %s' % (self.user, self.authy_profile.authy_id))
 
         return True
 
