@@ -21,7 +21,7 @@ class AuthyRegisterForm(BaseAuthyMediaForm):
     """
     country = forms.CharField(label='Your Country', widget=forms.Select(attrs={'id': 'authy-countries'}))
     cellphone = forms.CharField(label='Your Cellphone Number', widget=forms.TextInput(attrs={'id': 'authy-cellphone'}))
-    is_smartphone = forms.BooleanField(help_text='Smartphones generally; are those with a touch screen', initial=True)
+    is_smartphone = forms.BooleanField(help_text='Smartphones generally; are those with a touch screen', required=False, initial=True)
 
     class Meta:
         model = AuthyProfile
