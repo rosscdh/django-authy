@@ -20,7 +20,7 @@ class AuthyRegisterForm(BaseAuthyMediaForm):
     For the user to change or create their authy profile
     """
     country = forms.CharField(label='Your Country', widget=forms.Select(attrs={'id': 'authy-countries'}))
-    cellphone = forms.CharField(label='Your Cellphone Number', widget=forms.TextInput(attrs={'id': 'authy-cellphone'}))
+    cellphone = forms.CharField(label='Your Cellphone Number', help_text='Without the leading 0', widget=forms.TextInput(attrs={'id': 'authy-cellphone'}))
     is_smartphone = forms.BooleanField(help_text='Smartphones generally; are those with a touch screen', required=False, initial=True)
 
     class Meta:
