@@ -79,6 +79,12 @@ class Authy2FAForm(BaseAuthyMediaForm):
         model = AuthyProfile
         fields = ()
 
+    def __init__(self, request, *args, **kwargs):
+        super(Authy2FAForm, self).__init__(*args, **kwargs)
+
+        if request.method in ['GET']:
+            self.instance.service.request_sms_token()
+
     def clean_token(self):
         token = self.cleaned_data.get('token')
         authy_service = self.instance.service

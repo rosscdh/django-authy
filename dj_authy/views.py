@@ -45,6 +45,13 @@ class HoldingPageView(UpdateView):
     def get_object(self):
         return self.request.user.authy_profile
 
+    def get_form_kwargs(self):
+        kwargs = super(HoldingPageView, self).get_form_kwargs()
+        kwargs.update({
+            'request': self.request,
+        })
+        return kwargs
+
     def get_success_url(self):
         url = self.request.GET.get('next', '/')
         logger.debug('Authy HoldingPage redirect to: %s' % url)
