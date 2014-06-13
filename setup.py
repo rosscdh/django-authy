@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(
-    name="dj_authy",
+    name="django-authy",
     packages=['dj_authy'],
     version='0.1.0',
     author="Ross Crawford-d'Heureuse",
